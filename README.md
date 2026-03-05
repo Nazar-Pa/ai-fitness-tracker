@@ -1,59 +1,116 @@
-# AiFitnessApp
+# 🧠 AI Pose Fitness Trainer
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.1.0.
+An **AI-powered fitness trainer in the browser** that detects body poses in real time using **TensorFlow.js MoveNet** and counts exercise repetitions while giving **AI-based form correction feedback**.
 
-## Development server
+Built with **Angular 20+, TensorFlow.js, Pose Detection API, and Chart.js**.
 
-To start a local development server, run:
+---
+
+# 🚀 Features
+
+## 🧍 Real-Time Pose Detection
+- Uses **TensorFlow.js MoveNet model**
+- Detects human body joints from webcam video
+- Runs **fully in the browser**
+- No backend required
+
+---
+
+## 🏋️ Exercise Detection
+
+Supported exercises:
+
+- Squats
+- Push-ups
+- Jumping Jacks
+
+The system automatically detects motion patterns and counts repetitions.
+
+---
+
+## 🧠 AI Form Correction
+
+The application analyzes joint angles and posture to provide **real-time coaching feedback**.
+
+Example feedback:
+⬇️ Go lower
+🧍 Keep your back straight
+⚠️ Too low
+✅ Good form
+
+
+Form analysis is based on **joint angle calculations** using pose keypoints.
+
+---
+
+## 📊 Progress Dashboard
+
+Workout history is stored locally and visualized with **Chart.js**.
+
+The dashboard shows:
+
+- Workout progress over time
+- Exercise repetition history
+- Interactive charts with tooltips
+
+---
+
+## 🎨 Modern UI
+
+- Angular Signals for reactive state
+- Responsive layout
+- SCSS styling
+- Dashboard-style charts
+
+---
+
+# 🏗 Tech Stack
+
+| Technology | Purpose |
+|------------|--------|
+| Angular 20+ | Frontend framework |
+| Angular Signals | State management |
+| TensorFlow.js | Machine learning in browser |
+| MoveNet | Fast pose detection |
+| Pose Detection API | Human pose estimation |
+| Chart.js | Workout progress charts |
+| SCSS | Styling |
+| HTML5 Video API | Webcam input |
+
+---
+
+# 📂 Project Structure
+src/
+├── app/
+│ ├── workout/
+│ │ ├── workout.component.ts
+│ │ ├── workout.component.html
+│ │ └── workout.component.scss
+│ │
+│ ├── dashboard/
+│ │ ├── dashboard.component.ts
+│ │ └── dashboard.component.html
+│ │
+│ ├── services/
+│ │ └── workout-history.service.ts
+│ │
+│ └── utils/
+│ └── pose-utils.ts
+│
+├── assets/
+└── environments/
+
+
+---
+
+# ⚙️ Installation
+
+### 1️⃣ Clone the repository
 
 ```bash
+git clone https://github.com/Nazar-Pa/ai-pose-fitness.git
+cd ai-pose-fitness
+
+npm install
+
 ng serve
-```
-
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
-
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
-```bash
-ng generate component component-name
-```
-
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
-
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
-
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.

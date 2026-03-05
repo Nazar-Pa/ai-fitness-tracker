@@ -1,0 +1,51 @@
+<div class="workout-container">
+
+  <h1 class="title">🏋️ AI Fitness Trainer</h1>
+
+  <!-- Exercise Selector -->
+  <div class="exercise-selector">
+    @for(ex of (['squat','pushup','jumpingjack']); track ex) {
+    <button [class.active]="currentExercise() === ex" (click)="setExercise(ex)">
+      {{ ex | titlecase }}
+    </button>
+
+    }
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="stats">
+    <div class="card">
+      <span>Squats</span>
+      <strong>{{ stats().squat.reps }}</strong>
+    </div>
+
+    <div class="card">
+      <span>Push-ups</span>
+      <strong>{{ stats().pushup.reps }}</strong>
+    </div>
+
+    <div class="card">
+      <span>Jumping Jacks</span>
+      <strong>{{ stats().jumpingjack.reps }}</strong>
+    </div>
+  </div>
+
+  <!-- Save Button -->
+  <button class="save-btn" (click)="saveSession()">
+    💾 Save Workout
+  </button>
+
+  <div class="feedback" [class.good]="formFeedback().includes('Good')">
+    {{ formFeedback() }}
+  </div>
+
+  <!-- Video -->
+  <!-- @if (cameraIsOn) { -->
+  <div class="video-card">
+    <!-- <video #video autoplay playsinline></video>
+    <canvas #canvas></canvas> -->
+    <img src="images/image.jpg" alt="">
+  </div>
+  <!-- } -->
+
+</div>
