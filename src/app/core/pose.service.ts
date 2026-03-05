@@ -10,7 +10,7 @@ export class PoseService {
 
   stats = signal({
     squat: { reps: 0, isDown: false },
-    pushup: { reps: 15, isDown: false },
+    pushup: { reps: 0, isDown: false },
     jumpingjack: { reps: 0, isOpen: false },
   });
 

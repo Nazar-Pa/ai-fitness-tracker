@@ -14,13 +14,40 @@ export class Workout {
   @ViewChild('video') videoRef!: ElementRef<HTMLVideoElement>;
   @ViewChild('canvas') canvasRef!: ElementRef<HTMLCanvasElement>;
 
-  squatCount = signal(0);
+  // squatCount = signal(0);
   isDown = signal(false);
   poseService = inject(PoseService);
   historyService = inject(HistoryService);
   currentExercise = this.poseService.currentExercise;
   cameraIsOn = false;
-  formFeedback = signal('Start doing push-ups...');
+  formFeedback = signal('Start doing squats...');
+  frameCount = 0;
+  badJoints = signal<Set<string>>(new Set());
+
+  skeletonConnections = [
+    ['left_shoulder', 'right_shoulder'],
+    ['left_shoulder', 'left_elbow'],
+    ['left_elbow', 'left_wrist'],
+    ['right_shoulder', 'right_elbow'],
+    ['right_elbow', 'right_wrist'],
+
+    ['left_shoulder', 'left_hip'],
+    ['right_shoulder', 'right_hip'],
+    ['left_hip', 'right_hip'],
+
+    ['left_hip', 'left_knee'],
+    ['left_knee', 'left_ankle'],
+
+    ['right_hip', 'right_knee'],
+    ['right_knee', 'right_ankle'],
+  ];
+
+  idealSquatPose = [
+  { x: 300, y: 200 }, // shoulder
+  { x: 320, y: 300 }, // hip
+  { x: 350, y: 400 }, // knee
+  { x: 360, y: 500 }  // ankle
+];
 
   constructor() {
     this.init();
@@ -68,15 +95,21 @@ export class Workout {
 
   loop() {
     const detectFrame = async () => {
+      this.frameCount++;
       const video = this.videoRef.nativeElement;
-      if (video.videoWidth === 0) return;
+      if (video.videoWidth === 0) {
+        requestAnimationFrame(detectFrame);
+        return;
+      }
       const canvas = this.canvasRef.nativeElement;
       const ctx = canvas.getContext('2d')!;
 
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
 
-      await this.poseService.detect(video);
+      if (this.frameCount % 3 === 0) {
+        await this.poseService.detect(video);
+      }
 
       const poses = this.poseService.poses();
       // console.log('POSES:', poses);
@@ -86,9 +119,12 @@ export class Workout {
       if (poses.length > 0) {
         const keypoints = poses[0].keypoints;
 
+        this.drawGhostPose(ctx);
         this.drawSkeleton(ctx, keypoints);
-        this.detectSquat(keypoints);
-        if (this.poseService.currentExercise() === 'squat') {
+
+        const exercise = this.poseService.currentExercise();
+
+        if (exercise === 'squat') {
           this.analyzeSquatForm(keypoints);
         }
       }
@@ -110,61 +146,81 @@ export class Workout {
     const kneeAngle = calculateAngle(hip, knee, ankle);
     const backAngle = calculateAngle(shoulder, hip, knee);
 
+    const bad = new Set<string>();
+
     let feedback = '';
 
     if (kneeAngle > 160) {
       feedback = '⬇️ Go lower';
-    } else if (kneeAngle < 70) {
+      bad.add('left_knee');
+    }
+    else if (kneeAngle < 70) {
       feedback = '⚠️ Too low, control movement';
-    } else if (backAngle < 40) {
+      bad.add('left_knee');
+    }
+    else if (backAngle < 40) {
       feedback = '🧍 Keep your back straight';
-    } else {
+      bad.add('left_hip');
+      bad.add('left_shoulder');
+    }
+    else {
       feedback = '✅ Good form!';
     }
 
+    this.badJoints.set(bad);
     this.formFeedback.set(feedback);
   }
 
-  drawSkeleton(ctx: CanvasRenderingContext2D, keypoints: any[]) {
-    ctx.fillStyle = 'red';
+  drawGhostPose(ctx: CanvasRenderingContext2D) {
 
-    keypoints.forEach((kp) => {
-      if (kp.score > 0.4) {
-        ctx.beginPath();
-        ctx.arc(kp.x, kp.y, 8, 0, 2 * Math.PI);
-        ctx.fill();
-      }
-    });
-  }
+  ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+  ctx.lineWidth = 4;
 
-  detectSquat(keypoints: any[]) {
-    const hip = keypoints.find(k => k.name === 'left_hip');
-    const knee = keypoints.find(k => k.name === 'left_knee');
-    const ankle = keypoints.find(k => k.name === 'left_ankle');
+  ctx.beginPath();
+  ctx.moveTo(this.idealSquatPose[0].x, this.idealSquatPose[0].y);
+  ctx.lineTo(this.idealSquatPose[1].x, this.idealSquatPose[1].y);
+  ctx.lineTo(this.idealSquatPose[2].x, this.idealSquatPose[2].y);
+  ctx.lineTo(this.idealSquatPose[3].x, this.idealSquatPose[3].y);
+  ctx.stroke();
+}
 
-    if (!hip || !knee || !ankle) return;
+drawSkeleton(ctx: CanvasRenderingContext2D, keypoints: any[]) {
+  const bad = this.badJoints();
 
-    const angle = this.getAngle(hip, knee, ankle);
+  const keypointMap = new Map(
+    keypoints.map(k => [k.name, k])
+  );
 
-    if (angle < 90 && !this.isDown()) {
-      this.isDown.set(true);
+  ctx.lineWidth = 4;
+
+  this.skeletonConnections.forEach(([p1, p2]) => {
+    const kp1 = keypointMap.get(p1);
+    const kp2 = keypointMap.get(p2);
+
+    if (kp1?.score > 0.4 && kp2?.score > 0.4) {
+      ctx.beginPath();
+      ctx.moveTo(kp1.x, kp1.y);
+      ctx.lineTo(kp2.x, kp2.y);
+
+      ctx.strokeStyle =
+        bad.has(p1) || bad.has(p2) ? '#ef4444' : '#22c55e';
+
+      ctx.stroke();
     }
+  });
 
-    if (angle > 160 && this.isDown()) {
-      this.squatCount.update(v => v + 1);
-      this.isDown.set(false);
+  keypoints.forEach(kp => {
+    if (kp.score > 0.4) {
+      ctx.beginPath();
+      ctx.arc(kp.x, kp.y, 6, 0, 2 * Math.PI);
+
+      ctx.fillStyle = bad.has(kp.name)
+        ? '#ef4444'
+        : '#22c55e';
+
+      ctx.fill();
     }
-  }
+  });
+}
 
-  getAngle(a: any, b: any, c: any) {
-    const ab = { x: a.x - b.x, y: a.y - b.y };
-    const cb = { x: c.x - b.x, y: c.y - b.y };
-
-    const dot = ab.x * cb.x + ab.y * cb.y;
-    const magAB = Math.sqrt(ab.x ** 2 + ab.y ** 2);
-    const magCB = Math.sqrt(cb.x ** 2 + cb.y ** 2);
-
-    const angle = Math.acos(dot / (magAB * magCB));
-    return (angle * 180) / Math.PI;
-  }
 }
