@@ -25,6 +25,7 @@ Supported exercises:
 - Jumping Jacks
 
 The system automatically detects motion patterns and counts repetitions.
+<img width="4433" height="328" alt="mermaid-diagram" src="https://github.com/user-attachments/assets/c5d84690-13d4-4665-ae23-638eb896df53" />
 
 ---
 
