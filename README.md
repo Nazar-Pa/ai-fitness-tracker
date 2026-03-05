@@ -3,6 +3,8 @@
 An **AI-powered fitness trainer in the browser** that detects body poses in real time using **TensorFlow.js MoveNet** and counts exercise repetitions while giving **AI-based form correction feedback**.
 
 Built with **Angular 20+, TensorFlow.js, Pose Detection API, and Chart.js**.
+![image11](https://github.com/user-attachments/assets/84d3c379-a510-4948-9339-77877631bc4f)
+![image22](https://github.com/user-attachments/assets/1d711b09-44f4-45cb-b3bd-7f0b3e70281e)
 
 ---
 
